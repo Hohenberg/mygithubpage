@@ -4,9 +4,9 @@ include("dbConnect.php");
 //initialize name and message variables
 $name = false;
 $msg = false;
-if ($_POST["writeName"]) $name = $_POST["writeName"];
+if ($_POST["writeName"]) $name = htmlspecialchars($_POST["writeName"], ENT_QUOTES);
 else $name = "Anonymous";
-if ($_POST["writeMessage"]) $msg = $_POST["writeMessage"];
+if ($_POST["writeMessage"]) $msg = htmlspecialchars($_POST["writeMessage"], ENT_QUOTES);
 //insert new message into the database
 if ($name&&$msg){
 	$result = executeQuery("SELECT id FROM messages ORDER BY ID DESC LIMIT 1");
@@ -72,17 +72,39 @@ for ($c=0; $c<$pairNum; $c++){
 	}
 	$holder[$c] = "$og v ".$pair[$c];
 }
+//styles
 echo "<style>
 .voteBtn{
 	font-weight: bold;
 	font-family: 'Trebuchet MS', Helvetica, sans-serif;
-	background: #333333;
+	background: #808080;
 	color: white;
-	font-size: 16px;
-	border: 2px solid #333333;
+	border: 2px solid #808080;
 	border-radius: 5px;
+	font-size: 16px;
+	width: 36%;
+	height: 10%;
+	text-align: center;
+	vertical-align: middle;
 	cursor: pointer;
 	position: absolute;
+	white-space: normal;
+	z-index: 3;
+}
+.results{
+	font-weight: bold;
+	font-family: 'Trebuchet MS', Helvetica, sans-serif;
+	background: #808080;
+	color: white;
+	font-size: 16px;
+	width: 100%;
+	height: 7%;
+	border: 2px solid #808080;
+	text-align: center;
+	vertical-align: middle;
+	cursor: pointer;
+	position: absolute;
+	white-space: normal;
 }
 .legendTitle{
 	font-family: 'Trebuchet MS', Helvetica, sans-serif;
@@ -90,16 +112,42 @@ echo "<style>
 }
 .optionField{
 	width: 40%;
-	height: 40%;
+	height: 21%;
 	position: absolute;
 }
+.titleBlock{
+	color: white;
+	font-family: 'Trebuchet MS', Helvetica, sans-serif;
+	font-size: 90px;
+	font-weight: bold;
+	position: absolute;
+	top: 20%;
+	left: 38%;
+	z-index: 8;
+}
+.emptyOptions{
+	z-index: 1;
+	color: white;
+	font-size: 24px;
+	font-family: 'Trebuchet MS', Helvetica, sans-serif;
+	font-weight: bold;
+	position: absolute;
+	top: 45%;
+	left: 40%;
+}
 </style>";
-echo "<div id = 'container' style = 'width:100%; height: 100%; position: absolute; left: 0px; top: 0px; background: #33ffcc'>
-<fieldset style = 'border: 2px solid; color: #999999; top: 10%; left: 5%;' class = 'optionField'>
+//create content elements
+echo "<div id = 'container' style = 'width:100%; height: 100%; position: absolute; left: 0px; top: 0px;'>
+<div>
+	<img src = '/php/messageMatch/background2.jpg' style = 'width: 100%; height: 100%;'></img>
+</div>
+<fieldset style = 'border: 2px solid; color: #999999; top: 45%; left: 5%;' class = 'optionField'>
 	<legend class = 'legendTitle'>Option 1</legend>
+	<span class='emptyOptions'>No more</span>
 </fieldset>
-<fieldset style = 'border: 2px solid; color: #999999; top: 10%; left: 52%;' class = 'optionField'>
+<fieldset style = 'border: 2px solid; color: #999999; top: 45%; left: 52%;' class = 'optionField'>
 	<legend class = 'legendTitle'>Option 2</legend>
+	<span class='emptyOptions'>options left</span>
 </fieldset>
 <script type = 'text/javascript'>
 	var leftButton = new Array();
@@ -133,7 +181,8 @@ for ($s=0; $s<$pairNum; $s++){
 		else {
 			nextStep[$s] = -1;
 		}
-		var text = message[$og];	
+		var text = message[$og];
+		text = text.replace('&#039;', '\u0027');	
 		leftButton[$s] = document.createElement('INPUT');
 		leftButton[$s].value = text;
 		leftButton[$s].type = 'button';
@@ -142,11 +191,12 @@ for ($s=0; $s<$pairNum; $s++){
 		leftButton[$s].setAttribute('onclick', 'stepper(nextStep[$s], this.id)')
 		leftButton[$s].className = 'voteBtn';
 		leftButton[$s].style.display = 'none';
-		leftButton[$s].style.top = '15%';
+		leftButton[$s].style.top = '52%';
 		leftButton[$s].style.left = '8%';
 		container.appendChild(leftButton[$s]);
 
 		var text = message[$new];
+		text = text.replace('&#039;', '\u0027');
 		rightButton[$s] = document.createElement('INPUT');
 		rightButton[$s].value = text;
 		rightButton[$s].type = 'button';
@@ -155,11 +205,12 @@ for ($s=0; $s<$pairNum; $s++){
 		rightButton[$s].setAttribute('onclick', 'stepper(nextStep[$s], this.id)');
 		rightButton[$s].className = 'voteBtn';
 		rightButton[$s].style.display = 'none';
-		rightButton[$s].style.top = '15%';
+		rightButton[$s].style.top = '52%';
 		rightButton[$s].style.left = '55%';
 		container.appendChild(rightButton[$s]);
 	</script>";
 }
+//functionality for proceeding in rankings
 echo "<script type = 'text/javascript'>
 	function stepper(key, winner){
 		if (winner){
@@ -191,6 +242,7 @@ echo "<script type = 'text/javascript'>
 </script>";
 //generate elements that will carry info that will be saved for the score board
 echo "<form action = 'final.php' method = 'post'>";
+echo "<span class = 'titleBlock'>Yammr</span>";
 echo "<input type = 'hidden' name = 'total' value = '".($pairNum*2)."'>";
 for ($v=0; $v<($pairNum*2); $v++){
 	echo "<input type = 'hidden' name = 'dubTime' value = '$dubTime'>";
@@ -198,6 +250,6 @@ for ($v=0; $v<($pairNum*2); $v++){
 	echo "<input type = 'hidden' name = 'score$v' id = 'hid$v' value = '$score[$v]'>";
 	echo "<input type = 'hidden' name = 'ids$v' value = '$ids[$v]''>";
 }
-echo "<input type = 'submit' class = 'voteBtn' style = 'top: 60%; left:5%; padding: 10px;' value = 'See Results'>";
+echo "<input type = 'submit' class = 'results' style = 'top: 75%; left: 0%; width: 100%; height: 7%;' value = 'See Results'>";
 echo "</form>";
 ?>

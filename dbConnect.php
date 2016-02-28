@@ -1,6 +1,7 @@
 <?php
-//connect to the database
+//set initial timezone for timing purposes
 date_default_timezone_set('America/New_York');
+
 $dbConnect = mysqli_connect("127.0.0.1", "root", "UWestern", "messageMatch");
 if (!$dbConnect){
 	echo "Error, database failed to connect<BR>";
